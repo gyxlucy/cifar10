@@ -300,7 +300,7 @@ def main() :
     R_ovr = generate_output_codes(num_classes, 'ovr')
 
     # create MulticlassSVM
-    # use SVMs with polynomial kernel of degree 4 : K(u,v) = (1 + <u,v>)^4
+    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
     # and slack penalty C = 10
     clf = MulticlassSVM(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
     clf.fit(train_X, train_y)
@@ -331,13 +331,13 @@ def main() :
     print 'Logistic ovo accuracy', 1 - err
 
 
-    U, mu = util.PCA(train_X)
-    #util.plot_gallery([util.vec_to_image(U[:,i]) for i in xrange(20)])
+    # U, mu = util.PCA(train_X)
+    # util.plot_gallery([util.vec_to_image(U[:,i]) for i in xrange(20)])
 
-    l_list = [1, 10, 50, 100, 500, 1288]
-    for l in l_list:
-        Z, Ul = util.apply_PCA_from_Eig(train_X, U, l, mu)
-        X_rec = util.reconstruct_from_PCA(Z, Ul, mu)
+    # l_list = [1, 10, 50, 100, 500, 1288]
+    # for l in l_list:
+    #    Z, Ul = util.apply_PCA_from_Eig(train_X, U, l, mu)
+    #    X_rec = util.reconstruct_from_PCA(Z, Ul, mu)
         # util.plot_gallery([X_rec[i, :] for i in xrange(12)])
 
 
