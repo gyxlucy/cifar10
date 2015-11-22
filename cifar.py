@@ -9,6 +9,7 @@ import matplotlib.image as mpimg
 # scikit-learn libraries
 from sklearn.svm import SVC
 from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
 
 # utilities
 import util
@@ -130,7 +131,7 @@ def logistic_losses(R, discrim_func, alpha=2) :
 
 class MulticlassSVM :
     
-    def __init__(self, R, C=1.0, kernel='linear', **kwargs) :
+    def __init__(self, R, clf, C=1.0, kernel='linear', **kwargs) :
         """
         Multiclass SVM.
         
@@ -168,10 +169,13 @@ class MulticlassSVM :
             C = np.ones((num_classifiers,)) * C
         
         # set up and store classifier corresponding to jth column of R
-        self.svms = [None for _ in xrange(num_classifiers)]
+        self.clfs = [None for _ in xrange(num_classifiers)]
         for j in xrange(num_classifiers) :
-            svm = SVC(kernel=kernel, C=C[j], **kwargs)
-            self.svms[j] = svm
+            if clf == "svm":
+                clfs = SVC(kernel=kernel, C=C[j], **kwargs)
+            elif clf == "logistic":
+                clfs = LogisticRegression(fit_intercept=True, C=C[j])
+            self.clfs[j] = clfs
     
     
     def fit(self, X, y) :
@@ -196,23 +200,6 @@ class MulticlassSVM :
         
         # iterate through binary classifiers
         for j in xrange(num_classifiers) :
-            ### ========== TODO : START ========== ###
-            # part b: setup training data for binary classification task
-                        
-            # HERE IS ONE WAY (THERE MAY BE OTHER APPROACHES)
-            #
-            # keep two lists, pos_ndx and neg_ndx, that store indices
-            #   of examples to classify as pos / neg for current binary task
-            #
-            # for each class C
-            # a) find indices for which examples have class equal to C
-            #    [use np.nonzero(CONDITION)[0]]
-            # b) update pos_ndx and neg_ndx based on output code R[i,j]
-            #    where i = class index, j = classifier index
-            #
-            # set X_train using X with pos_ndx and neg_ndx
-            # set y_train using y with pos_ndx and neg_ndx
-            #   y_train should contain only {+1,-1}
 
             pos_ndx = []
             neg_ndx = []
@@ -227,10 +214,9 @@ class MulticlassSVM :
             
             X_train = X[pos_ndx + neg_ndx, :]
             y_train = np.append(np.ones(len(pos_ndx)), np.ones(len(neg_ndx)) * (-1))
-            ### ========== TODO : END ========== ###
             
             # train binary classifier
-            svm = self.svms[j]
+            svm = self.clfs[j]
             svm.fit(X_train, y_train)
     
     
@@ -260,7 +246,7 @@ class MulticlassSVM :
         #   column index represents the index of binary classifiers
         discrim_func = np.zeros((n,num_classifiers))
         for j in xrange(num_classifiers) :
-            discrim_func[:,j] = self.svms[j].decision_function(X)
+            discrim_func[:,j] = self.clfs[j].decision_function(X)
         
         # scan through the examples
         losses = []
@@ -309,9 +295,6 @@ def main() :
         # plt.imshow(img)
         # plt.show()
 
-    # average_pic = np.average(X, axis=0)
-    # util.show_image(average_pic)
-
     num_classes = 4
 
     R_ovr = generate_output_codes(num_classes, 'ovr')
@@ -319,19 +302,33 @@ def main() :
     # create MulticlassSVM
     # use SVMs with polynomial kernel of degree 4 : K(u,v) = (1 + <u,v>)^4
     # and slack penalty C = 10
-    clf = MulticlassSVM(R_ovr, C=10, kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf = MulticlassSVM(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'ovr accuracy', 1 - err
+    print 'SVM ovr accuracy', 1 - err
 
     R_ovo = generate_output_codes(num_classes, 'ovo')
 
-    clf = MulticlassSVM(R_ovo, C=10, kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf = MulticlassSVM(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'ovo accuracy', 1 - err
+    print 'SVM ovo accuracy', 1 - err
+
+    clf = MulticlassSVM(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(test_X)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print 'Logistic ovr accuracy', 1 - err
+
+    R_ovo = generate_output_codes(num_classes, 'ovo')
+
+    clf = MulticlassSVM(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(test_X)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print 'Logistic ovo accuracy', 1 - err
 
 
     U, mu = util.PCA(train_X)
