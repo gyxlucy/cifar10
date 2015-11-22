@@ -129,7 +129,7 @@ def logistic_losses(R, discrim_func, alpha=2) :
 # classes
 ######################################################################
 
-class MulticlassSVM :
+class Multiclass:
     
     def __init__(self, R, clf, C=1.0, kernel='linear', **kwargs) :
         """
@@ -295,6 +295,7 @@ def main() :
         # plt.imshow(img)
         # plt.show()
 
+
     num_classes = 4
 
     R_ovr = generate_output_codes(num_classes, 'ovr')
@@ -302,33 +303,92 @@ def main() :
     # create MulticlassSVM
     # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
     # and slack penalty C = 10
-    clf = MulticlassSVM(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    print "No PCA:"
+    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'SVM ovr accuracy', 1 - err
+    print '     SVM ovr accuracy', 1 - err
 
     R_ovo = generate_output_codes(num_classes, 'ovo')
 
-    clf = MulticlassSVM(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'SVM ovo accuracy', 1 - err
+    print '     SVM ovo accuracy', 1 - err
 
-    clf = MulticlassSVM(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf = Multiclass(R_ovr, C=10, clf='logistic' )
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'Logistic ovr accuracy', 1 - err
+    print '     Log Reg ovr accuracy', 1 - err
 
     R_ovo = generate_output_codes(num_classes, 'ovo')
 
-    clf = MulticlassSVM(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf = Multiclass(R_ovo, C=10, clf='logistic')
     clf.fit(train_X, train_y)
     y_pred = clf.predict(test_X)
     err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
-    print 'Logistic ovo accuracy', 1 - err
+    print '     Log Reg ovo accuracy', 1 - err
+
+    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(test_X)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     Log Reg multinomial accuracy', 1 - err
+
+
+    # Using PCA
+    l = 50
+    print "PCA with %d principal components:" % l
+    U_train, mu_train = util.PCA(train_X)
+    U_test, mu_test = util.PCA(test_X)
+    Z_train, Ul_train = util.apply_PCA_from_Eig(train_X, U_train, l, mu_train)
+    train_X_rec = util.reconstruct_from_PCA(Z_train, Ul_train, mu_train)
+    Z_test, Ul_test = util.apply_PCA_from_Eig(test_X, U_test, l, mu_test)
+    test_X_rec = util.reconstruct_from_PCA(Z_test, Ul_test, mu_test)
+
+
+    R_ovr = generate_output_codes(num_classes, 'ovr')
+
+    # create Multiclass
+    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
+    # and slack penalty C = 10
+    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X_rec, train_y)
+    y_pred = clf.predict(test_X_rec)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     SVM PCA ovr accuracy', 1 - err
+
+    R_ovo = generate_output_codes(num_classes, 'ovo')
+
+    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X_rec, train_y)
+    y_pred = clf.predict(test_X_rec)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     SVM PCA ovo accuracy', 1 - err
+
+    clf = Multiclass(R_ovr, C=10, clf='logistic')
+    clf.fit(train_X_rec, train_y)
+    y_pred = clf.predict(test_X_rec)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     Log Reg PCA ovr accuracy', 1 - err
+
+    R_ovo = generate_output_codes(num_classes, 'ovo')
+
+    clf = Multiclass(R_ovo, C=10, clf='logistic')
+    clf.fit(train_X_rec, train_y)
+    y_pred = clf.predict(test_X_rec)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     Log Reg PCA ovo accuracy', 1 - err
+
+    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l2', solver='lbfgs', multi_class='multinomial')
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(test_X)
+    err = metrics.zero_one_loss(test_y, y_pred, normalize=True)
+    print '     Log Reg multinomial accuracy', 1 - err
+
 
 
     # U, mu = util.PCA(train_X)
