@@ -59,61 +59,61 @@ def plot_gallery(images, title='plot', subtitles=[],
     plt.show()
 
 
-def limit_pics(X, y, classes, nim):
-    """
-    Select subset of images from dataset.
-    User can specify desired classes and desired number of images per class.
+# def limit_pics(X, y, classes, nim):
+#     """
+#     Select subset of images from dataset.
+#     User can specify desired classes and desired number of images per class.
     
-    Parameters
-    --------------------
-        X       -- numpy array of shape (n,d), features
-        y       -- numpy array of shape (n,), targets
-        classes -- list of ints, subset of target classes to retain
-        nim     -- int, number of images desired per class
+#     Parameters
+#     --------------------
+#         X       -- numpy array of shape (n,d), features
+#         y       -- numpy array of shape (n,), targets
+#         classes -- list of ints, subset of target classes to retain
+#         nim     -- int, number of images desired per class
     
-    Returns
-    --------------------
-        X1      -- numpy array of shape (nim * len(classes), d), subset of X
-        y1      -- numpy array of shape (nim * len(classes),), subset of y
-    """
+#     Returns
+#     --------------------
+#         X1      -- numpy array of shape (nim * len(classes), d), subset of X
+#         y1      -- numpy array of shape (nim * len(classes),), subset of y
+#     """
     
-    n, d = X.shape
-    k = len(classes)
-    X1 = np.zeros((k*nim, d), dtype=float)
-    y1 = np.zeros(k*nim, dtype=int)
-    index = 0
-    for ni, i in enumerate(classes) :      # for each class
-        count = 0                           # count how many samples in class so far
-        for j in range(n):                 # look over the data
-            if count < nim and y[j] == i : # element of class
-                X1[index] = X[j]
-                y1[index] = ni
-                index += 1
-                count += 1
-    return X1, y1
+#     n, d = X.shape
+#     k = len(classes)
+#     X1 = np.zeros((k*nim, d), dtype=float)
+#     y1 = np.zeros(k*nim, dtype=int)
+#     index = 0
+#     for ni, i in enumerate(classes) :      # for each class
+#         count = 0                           # count how many samples in class so far
+#         for j in range(n):                 # look over the data
+#             if count < nim and y[j] == i : # element of class
+#                 X1[index] = X[j]
+#                 y1[index] = ni
+#                 index += 1
+#                 count += 1
+#     return X1, y1
 
 
 ######################################################################
 # sampling utilities
 ######################################################################
 
-def random_sample_2d(mu, sigma):
-    """
-    Randomly sample point from a normal distribution.
+# def random_sample_2d(mu, sigma):
+#     """
+#     Randomly sample point from a normal distribution.
     
-    Parameters
-    --------------------
-        mu    -- numpy array of shape (2,), mean along each dimension
-        sigma -- numpy array of shape (2,), standard deviation along each dimension
+#     Parameters
+#     --------------------
+#         mu    -- numpy array of shape (2,), mean along each dimension
+#         sigma -- numpy array of shape (2,), standard deviation along each dimension
     
-    Returns
-    --------------------
-        point -- numpy array of shape (2,), sampled point
-    """
+#     Returns
+#     --------------------
+#         point -- numpy array of shape (2,), sampled point
+#     """
     
-    x = np.random.normal(mu[0], sigma[0])
-    y = np.random.normal(mu[1], sigma[1])
-    return np.array([x,y])
+#     x = np.random.normal(mu[0], sigma[0])
+#     y = np.random.normal(mu[1], sigma[1])
+#     return np.array([x,y])
 
 ######################################################################
 # PCA utilities
