@@ -11,6 +11,7 @@ from sklearn.svm import SVC
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 
+import skimage.feature as ft
 
 import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
@@ -280,16 +281,16 @@ def main() :
 
     classes = ['frog', 'deer', 'ship', 'airplane']
     all_y = np.zeros(20000)
-    train_y = np.zeros(12000)
-    valid_y = np.zeros(4000)
+    train_y = np.zeros(3000)
+    valid_y = np.zeros(1000)
     i = 0
     for row in labelreader:
         if i > 0:
             all_y[i - 1] = classes.index(row[1])
         i += 1
 
-    train_X = np.zeros((12000, 3072))
-    valid_X = np.zeros((4000, 3072))
+    train_X = np.zeros((3000, 3072))
+    valid_X = np.zeros((1000, 3072))
     i = 0
     for index in xrange(20000):
         name = "training_data/" + str(index + 1) + ".png"
@@ -298,6 +299,7 @@ def main() :
             train_X[i] = img.flatten()
             train_y[i] = all_y[index]
             i += 1
+
     i = 0
     for index in xrange(20000):
         name = "held_out/" + str(index + 1) + ".png"
@@ -392,42 +394,27 @@ def main() :
     err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
     print '     Log Reg multinomial accuracy', 1 - err
 
+    print "Done with PCA..."
 
     # Extract Features using HOG Descriptor
-    winSize = (32, 32)
-    blockSize = (16, 16)
-    blockStride = (8, 8)
-    cellSize = (8, 8)
-    nbins = 9
-    derivAperture = 1
-    winSigma = 4.
-    histogramNormType = 0
-    L2HysThreshold = 2.0000000000000001e-01
-    gammaCorrection = 0
-    nlevels = 64
-    hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins, derivAperture, winSigma, \
-        histogramNormType, L2HysThreshold, gammaCorrection, nlevels)
-    winStride = (8, 8)
-    padding = (8, 8)
-    locations = ((10, 20),)
-
-    train_X = np.zeros((12000, 324))
-    valid_X = np.zeros((4000, 324))
+    train_X = np.zeros((3000, 324))
+    valid_X = np.zeros((1000, 324))
     i = 0
     for index in xrange(20000):
         name = "training_data/" + str(index + 1) + ".png"
         if os.path.isfile(name):
-            img = cv2.imread(name)
-            des = np.array(hog.compute(img, winStride, padding, locations))
-            train_X[i] = des.flatten()
+            img = cv2.imread(name, 0)
+            hog = ft.hog(img)
+            train_X[i] = hog
             i += 1
+
     i = 0
     for index in xrange(20000):
         name = "held_out/" + str(index + 1) + ".png"
         if os.path.isfile(name):
-            img = cv2.imread(name)
-            des = np.array(hog.compute(img, winStride, padding, locations))
-            valid_X[i] = des.flatten()
+            img = cv2.imread(name, 0)
+            hog = ft.hog(img)
+            valid_X[i] = hog
             i += 1
 
 
