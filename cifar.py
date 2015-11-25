@@ -6,11 +6,16 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.image as mpimg
 
+# pyleargist libraries
+from PIL import Image
+import leargist
+
 # scikit-learn libraries
 from sklearn.svm import SVC
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 
+#scikit-image libraries
 import skimage.feature as ft
 
 import sys
@@ -289,6 +294,8 @@ def main() :
             all_y[i - 1] = classes.index(row[1])
         i += 1
 
+
+    # Raw Feature
     train_X = np.zeros((3000, 3072))
     valid_X = np.zeros((1000, 3072))
     i = 0
@@ -396,7 +403,61 @@ def main() :
 
     print "Done with PCA..."
 
-    # Extract Features using HOG Descriptor
+
+    # Extract Features using GIST Descriptor
+    train_X = np.zeros((3000, 960))
+    valid_X = np.zeros((1000, 960))
+    i = 0
+    for index in xrange(20000):
+        name = "training_data/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = Image.open(name)
+            gist = leargist.color_gist(img)
+            train_X[i] = gist
+            i += 1
+
+    i = 0
+    for index in xrange(20000):
+        name = "held_out/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = Image.open(name)
+            gist = leargist.color_gist(img)
+            valid_X[i] = gist
+            i += 1
+
+    print "GIST (without PCA):"
+    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(valid_X)
+    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    print '     SVM GIST ovr accuracy', 1 - err
+
+    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(valid_X)
+    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    print '     SVM GIST ovo accuracy', 1 - err
+
+    clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(valid_X)
+    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    print '     Log Reg GIST ovr accuracy', 1 - err
+
+    clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(valid_X)
+    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    print '     Log Reg GIST ovo accuracy', 1 - err
+
+    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+    clf.fit(train_X, train_y)
+    y_pred = clf.predict(valid_X)
+    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    print '     Log Reg GIST multinomial accuracy', 1 - err
+
+
+   # Extract Features using HOG Descriptor
     train_X = np.zeros((3000, 324))
     valid_X = np.zeros((1000, 324))
     i = 0
@@ -416,7 +477,6 @@ def main() :
             hog = ft.hog(img)
             valid_X[i] = hog
             i += 1
-
 
     print "HOG (without PCA):"
     clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
