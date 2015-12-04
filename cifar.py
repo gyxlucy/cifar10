@@ -14,6 +14,7 @@ import leargist
 from sklearn.svm import SVC
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 
 #scikit-image libraries
 import skimage.feature as ft
@@ -327,35 +328,42 @@ def main() :
     # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
     # and slack penalty C = 10
     print "Raw feature:"
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM ovr accuracy', 1 - err
+    # clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     SVM ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM ovo accuracy', 1 - err
+    # clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     SVM ovo accuracy', 1 - err
 
-    clf = Multiclass(R_ovr, C=10, clf='logistic' )
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg ovr accuracy', 1 - err
+    # clf = Multiclass(R_ovr, C=10, clf='logistic' )
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     Log Reg ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='logistic')
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg ovo accuracy', 1 - err
+    # clf = Multiclass(R_ovo, C=10, clf='logistic')
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     Log Reg ovo accuracy', 1 - err
 
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+    # clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     Log Reg multinomial accuracy', 1 - err
+
+    k = 14
+    clf = KNeighborsClassifier(n_neighbors=k)
     clf.fit(train_X_raw, train_y)
     y_pred = clf.predict(valid_X_raw)
     err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg multinomial accuracy', 1 - err
+    print '     KNN with %d neighbors accuracy %f' % (k, 1 - err)
 
 
     # Extract Features using GIST Descriptor
