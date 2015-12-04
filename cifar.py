@@ -393,16 +393,15 @@ def main() :
     kf = StratifiedKFold(train_y, n_folds=10)
 
 
-    numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+    # numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
 
-    clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
-    # clf.fit(train_X_raw, train_y)
-    # y_pred = clf.predict(valid_X_raw)
-    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Random Forest accuracy', accuracy
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # # clf.fit(train_X_raw, train_y)
+    # # y_pred = clf.predict(valid_X_raw)
+    # # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Random Forest accuracy', accuracy
 
-    exit(0)
 
     # select_param_svm_poly(train_X_raw, train_y, kf)
 
@@ -472,10 +471,9 @@ def main() :
 
     k = 14
     clf = KNeighborsClassifier(n_neighbors=k)
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     KNN with %d neighbors accuracy %f' % (k, 1 - err)
+    #clf.fit(train_X_raw, train_y)
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
 
 
     # Extract Features using GIST Descriptor
