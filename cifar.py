@@ -12,7 +12,9 @@ import leargist
 
 # scikit-learn libraries
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
+from sklearn.cross_validation import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 
 #scikit-image libraries
@@ -276,45 +278,155 @@ class Multiclass :
 
 
 ######################################################################
+# functions -- evaluation
+######################################################################
+
+def cv_performance(clf, X, y, kf, metric="accuracy"):
+    """
+    Splits the data, X and y, into k-folds and runs k-fold cross-validation.
+    Trains classifier on k-1 folds and tests on the remaining fold.
+    Calculates the k-fold cross-validation performance metric for classifier
+    by averaging the performance across folds.
+    
+    Parameters
+    --------------------
+        clf    -- classifier (instance of SVC)
+        X      -- numpy array of shape (n,d), feature vectors
+                    n = number of examples
+                    d = number of features
+        y      -- numpy array of shape (n,), binary labels {1,-1}
+        kf     -- cross_validation.KFold or cross_validation.StratifiedKFold
+        metric -- string, option used to select performance measure
+    
+    Returns
+    --------------------
+        score   -- float, average cross-validation performance across k folds
+    """
+    
+    # compute average cross-validation performance
+    index = 0
+    scores = np.zeros(10) 
+    for train_index, test_index in kf:
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        clf.fit(X_train, y_train)
+        y_pred = clf.predict(X_test)
+        scores[index] = metrics.accuracy_score(y_test, y_pred)
+        index += 1
+        # print "Fold", index, ":", scores[index - 1]
+    return (sum(scores)) / 10
+
+
+def select_param_randomForest(X, y, kf):
+    """
+    Sweeps different settings for the hyperparameter of a poly-kernel SVM,
+    calculating the k-fold CV performance for each setting, then selecting the
+    hyperparameter that 'maximize' the average k-fold CV performance.
+    
+    Parameters
+    --------------------
+        X      -- numpy array of shape (n,d), feature vectors
+                    n = number of examples
+                    d = number of features
+        y      -- numpy array of shape (n,)
+        kf     -- cross_validation.KFold or cross_validation.StratifiedKFold
+    
+    Returns
+    --------------------
+        C -- float, optimal parameter value for linear-kernel SVM
+        deg -- degree of kernel
+    """
+    
+    print 'Random Forest Hyperparameter Selection:'
+    ### ========== TODO : START ========== ###
+    numTree_range = np.arange(10, 51, 5)
+    depth_range = np.arange(50, 1001, 50)
+    best_score = float("-inf")
+    best_numTree = 0
+    best_depth = 0
+    for numTree in numTree_range:
+        for depth in depth_range:
+            clf = RandomForestClassifier(n_estimators=numTree, max_depth = depth, criterion='entropy')
+            temp_score = cv_performance(clf, X, y, kf)
+            print "The score for numTree =", numTree , "and max depth =", depth, "is", temp_score
+            if temp_score > best_score:
+                best_numTree, best_depth, best_score  = numTree, depth, temp_score
+    return best_numTree, best_depth
+
+
+######################################################################
 # main
 ######################################################################
 
 def main() :
+
+    np.random.seed(1234)
 
     original_labels = open('trainLabels_modified.csv', 'rb')
     labelreader = csv.reader(original_labels)
 
     classes = ['frog', 'deer', 'ship', 'airplane']
     all_y = np.zeros(20000)
-    train_y = np.zeros(3000)
-    valid_y = np.zeros(1000)
     i = 0
     for row in labelreader:
         if i > 0:
             all_y[i - 1] = classes.index(row[1])
         i += 1
 
+    # train_y = np.zeros(3000)
+    # valid_y = np.zeros(1000)
 
-    # Raw Feature
-    train_X_raw = np.zeros((3000, 3072))
-    valid_X_raw = np.zeros((1000, 3072))
+    train_X_raw = np.zeros((4000, 3072))
+    train_y = np.zeros(4000)
+
     i = 0
     for index in xrange(20000):
-        name = "training_data/" + str(index + 1) + ".png"
+        name = "data4000/" + str(index + 1) + ".png"
         if os.path.isfile(name):
             img = mpimg.imread(name)
             train_X_raw[i] = img.flatten()
             train_y[i] = all_y[index]
             i += 1
 
-    i = 0
-    for index in xrange(20000):
-        name = "held_out/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = mpimg.imread(name)
-            valid_X_raw[i] = img.flatten()
-            valid_y[i] = all_y[index]
-            i += 1
+    # create stratified folds (10-fold CV)
+    kf = StratifiedKFold(train_y, n_folds=10)
+
+
+    numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+
+    clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     Random Forest accuracy', accuracy
+
+    exit(0)
+
+    # select_param_svm_poly(train_X_raw, train_y, kf)
+
+    # Raw Feature
+
+    # train_X_raw = np.zeros((3000, 3072))
+    # valid_X_raw = np.zeros((1000, 3072))
+
+    # i = 0
+    # for index in xrange(20000):
+    #     name = "training_data/" + str(index + 1) + ".png"
+    #     if os.path.isfile(name):
+    #         img = mpimg.imread(name)
+    #         train_X_raw[i] = img.flatten()
+    #         train_y[i] = all_y[index]
+    #         i += 1
+
+    # i = 0
+    # for index in xrange(20000):
+    #     name = "held_out/" + str(index + 1) + ".png"
+    #     if os.path.isfile(name):
+    #         img = mpimg.imread(name)
+    #         valid_X_raw[i] = img.flatten()
+    #         valid_y[i] = all_y[index]
+    #         i += 1
 
     print "Done with loading data..."
 
