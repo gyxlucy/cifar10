@@ -13,6 +13,7 @@ import leargist
 # scikit-learn libraries
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
@@ -318,29 +319,11 @@ def cv_performance(clf, X, y, kf, metric="accuracy"):
 
 
 def select_param_randomForest(X, y, kf):
-    """
-    Sweeps different settings for the hyperparameter of a poly-kernel SVM,
-    calculating the k-fold CV performance for each setting, then selecting the
-    hyperparameter that 'maximize' the average k-fold CV performance.
-    
-    Parameters
-    --------------------
-        X      -- numpy array of shape (n,d), feature vectors
-                    n = number of examples
-                    d = number of features
-        y      -- numpy array of shape (n,)
-        kf     -- cross_validation.KFold or cross_validation.StratifiedKFold
-    
-    Returns
-    --------------------
-        C -- float, optimal parameter value for linear-kernel SVM
-        deg -- degree of kernel
-    """
-    
+
     print 'Random Forest Hyperparameter Selection:'
     ### ========== TODO : START ========== ###
-    numTree_range = np.arange(10, 51, 5)
-    depth_range = np.arange(50, 1001, 50)
+    numTree_range = [10, 20, 50, 100, 200, 500]
+    depth_range = [10, 20, 50, 100, 200, 500, 1000, 2000]
     best_score = float("-inf")
     best_numTree = 0
     best_depth = 0
@@ -348,10 +331,29 @@ def select_param_randomForest(X, y, kf):
         for depth in depth_range:
             clf = RandomForestClassifier(n_estimators=numTree, max_depth = depth, criterion='entropy')
             temp_score = cv_performance(clf, X, y, kf)
-            print "The score for numTree =", numTree , "and max depth =", depth, "is", temp_score
+            print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score
             if temp_score > best_score:
                 best_numTree, best_depth, best_score  = numTree, depth, temp_score
     return best_numTree, best_depth
+
+
+def select_param_randomForest(X, y, kf):
+    
+    print 'Random Forest Hyperparameter Selection:'
+    ### ========== TODO : START ========== ###
+    numTree_range = [10, 20, 50, 100, 200, 500]
+    depth_range = [10, 20, 50, 100, 200, 500, 1000, 2000]
+    best_score = float("-inf")
+    best_numTree = 0
+    best_depth = 0
+    for numTree in numTree_range:
+        for depth in depth_range:
+            clf = RandomForestClassifier(n_estimators=numTree, max_depth = depth, criterion='entropy')
+            temp_score = cv_performance(clf, X, y, kf)
+            print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score
+            if temp_score > best_score:
+                best_numTree, best_depth, best_score  = numTree, depth, temp_score
+    return best_numTree, best_depths
 
 
 ######################################################################
@@ -399,7 +401,14 @@ def main() :
     # y_pred = clf.predict(valid_X_raw)
     # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Random Forest accuracy', accuracy
+    print 
+    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+
+    k = 14
+    clf = KNeighborsClassifier(n_neighbors=k)
+    #clf.fit(train_X_raw, train_y)
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
 
     exit(0)
 
