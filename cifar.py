@@ -394,8 +394,8 @@ def main() :
     kf = StratifiedKFold(train_y, n_folds=10)
 
 
+    # select hyperparameters for random forest classifier
     numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
-
     clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
     # clf.fit(train_X_raw, train_y)
     # y_pred = clf.predict(valid_X_raw)
