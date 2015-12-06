@@ -508,52 +508,52 @@ def main() :
     kf = StratifiedKFold(train_y, n_folds=10)
 
 
-    print "Raw feature:"
+    # print "Raw feature:"
 
-    # select hyperparameters for SVM classifier with poly kernel
-    oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
-
-
-    # select hyperparameters for SVM classifier with RBF kernel
-    oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
-    # Best: ovo, c = 10, gamma = 0.00390625
+    # # select hyperparameters for SVM classifier with poly kernel
+    # oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
+    # clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
 
 
-    # select hyperparameters for random forest classifier
-    numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
-    clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
-    # Best: numTree = 500, max depth = 500
+    # # select hyperparameters for SVM classifier with RBF kernel
+    # oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
+    # clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    # # Best: ovo, c = 10, gamma = 0.00390625
 
 
-    # select hyperparameters for kNN classifier
-    k = select_param_kNN(train_X_raw, train_y, kf)
-    clf = KNeighborsClassifier(n_neighbors=k)
-    #clf.fit(train_X_raw, train_y)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
-    # Best: k = 5
+    # # select hyperparameters for random forest classifier
+    # numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    # # Best: numTree = 500, max depth = 500
 
 
-    # select hyperparameters for Log Reg
-    R_ovr = generate_output_codes(num_classes, 'ovr')
-    R_ovo = generate_output_codes(num_classes, 'ovo')
+    # # select hyperparameters for kNN classifier
+    # k = select_param_kNN(train_X_raw, train_y, kf)
+    # clf = KNeighborsClassifier(n_neighbors=k)
+    # #clf.fit(train_X_raw, train_y)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    # # Best: k = 5
 
-    codes = {}
-    codes["ovr"] = R_ovr
-    codes["ovo"] = R_ovo
 
-    c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
-    clf = Multiclass(code, C=c, clf='logistic')
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
+    # # select hyperparameters for Log Reg
+    # R_ovr = generate_output_codes(num_classes, 'ovr')
+    # R_ovo = generate_output_codes(num_classes, 'ovo')
+
+    # codes = {}
+    # codes["ovr"] = R_ovr
+    # codes["ovo"] = R_ovo
+
+    # c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
+    # clf = Multiclass(code, C=c, clf='logistic')
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
 
 
 
@@ -570,7 +570,6 @@ def main() :
             i += 1
 
     print "GIST (without PCA):"
-
 
     # select hyperparameters for kNN classifier
     k = select_param_kNN(train_X_gist, train_y, kf)
@@ -737,285 +736,280 @@ def main() :
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
         print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
 
-
     exit(0)
 
 
+   #  # Raw Feature
 
+   #  train_X_raw = np.zeros((3000, 3072))
+   #  valid_X_raw = np.zeros((1000, 3072))
 
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "training_data/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = mpimg.imread(name)
+   #          train_X_raw[i] = img.flatten()
+   #          train_y[i] = all_y[index]
+   #          i += 1
 
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "held_out/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = mpimg.imread(name)
+   #          valid_X_raw[i] = img.flatten()
+   #          valid_y[i] = all_y[index]
+   #          i += 1
 
-    # Raw Feature
-
-    train_X_raw = np.zeros((3000, 3072))
-    valid_X_raw = np.zeros((1000, 3072))
-
-    i = 0
-    for index in xrange(20000):
-        name = "training_data/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = mpimg.imread(name)
-            train_X_raw[i] = img.flatten()
-            train_y[i] = all_y[index]
-            i += 1
-
-    i = 0
-    for index in xrange(20000):
-        name = "held_out/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = mpimg.imread(name)
-            valid_X_raw[i] = img.flatten()
-            valid_y[i] = all_y[index]
-            i += 1
-
-    print "Done with loading data..."
+   #  print "Done with loading data..."
 
     
-    # create MulticlassSVM
-    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
-    # and slack penalty C = 10
-    # print "Raw feature:"
-    # clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    # clf.fit(train_X_raw, train_y)
-    # y_pred = clf.predict(valid_X_raw)
-    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    # print '     SVM ovr accuracy', 1 - err
+   #  # create MulticlassSVM
+   #  # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
+   #  # and slack penalty C = 10
+   #  # print "Raw feature:"
+   #  # clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  # clf.fit(train_X_raw, train_y)
+   #  # y_pred = clf.predict(valid_X_raw)
+   #  # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  # print '     SVM ovr accuracy', 1 - err
 
-    # clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    # clf.fit(train_X_raw, train_y)
-    # y_pred = clf.predict(valid_X_raw)
-    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    # print '     SVM ovo accuracy', 1 - err
+   #  # clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  # clf.fit(train_X_raw, train_y)
+   #  # y_pred = clf.predict(valid_X_raw)
+   #  # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  # print '     SVM ovo accuracy', 1 - err
 
    
 
-    # Extract Features using GIST Descriptor
-    train_X_gist = np.zeros((3000, 960))
-    valid_X_gist = np.zeros((1000, 960))
-    i = 0
-    for index in xrange(20000):
-        name = "training_data/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = Image.open(name)
-            gist = leargist.color_gist(img)
-            train_X_gist[i] = gist
-            i += 1
+   #  # Extract Features using GIST Descriptor
+   #  train_X_gist = np.zeros((3000, 960))
+   #  valid_X_gist = np.zeros((1000, 960))
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "training_data/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = Image.open(name)
+   #          gist = leargist.color_gist(img)
+   #          train_X_gist[i] = gist
+   #          i += 1
 
-    i = 0
-    for index in xrange(20000):
-        name = "held_out/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = Image.open(name)
-            gist = leargist.color_gist(img)
-            valid_X_gist[i] = gist
-            i += 1
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "held_out/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = Image.open(name)
+   #          gist = leargist.color_gist(img)
+   #          valid_X_gist[i] = gist
+   #          i += 1
 
-    print "GIST (without PCA):"
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_gist, train_y)
-    y_pred = clf.predict(valid_X_gist)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM GIST ovr accuracy', 1 - err
+   #  print "GIST (without PCA):"
+   #  clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_gist, train_y)
+   #  y_pred = clf.predict(valid_X_gist)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM GIST ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_gist, train_y)
-    y_pred = clf.predict(valid_X_gist)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM GIST ovo accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_gist, train_y)
+   #  y_pred = clf.predict(valid_X_gist)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM GIST ovo accuracy', 1 - err
 
-    clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_gist, train_y)
-    y_pred = clf.predict(valid_X_gist)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg GIST ovr accuracy', 1 - err
+   #  clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_gist, train_y)
+   #  y_pred = clf.predict(valid_X_gist)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg GIST ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_gist, train_y)
-    y_pred = clf.predict(valid_X_gist)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg GIST ovo accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_gist, train_y)
+   #  y_pred = clf.predict(valid_X_gist)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg GIST ovo accuracy', 1 - err
 
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
-    clf.fit(train_X_gist, train_y)
-    y_pred = clf.predict(valid_X_gist)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg GIST multinomial accuracy', 1 - err
-
-
-   # Extract Features using HOG Descriptor
-    train_X_hog = np.zeros((3000, 324))
-    valid_X_hog = np.zeros((1000, 324))
-    i = 0
-    for index in xrange(20000):
-        name = "training_data/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = cv2.imread(name, 0)
-            hog = ft.hog(img)
-            train_X_hog[i] = hog
-            i += 1
-
-    i = 0
-    for index in xrange(20000):
-        name = "held_out/" + str(index + 1) + ".png"
-        if os.path.isfile(name):
-            img = cv2.imread(name, 0)
-            hog = ft.hog(img)
-            valid_X_hog[i] = hog
-            i += 1
-
-    print "HOG (without PCA):"
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_hog, train_y)
-    y_pred = clf.predict(valid_X_hog)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM HOG ovr accuracy', 1 - err
-
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_hog, train_y)
-    y_pred = clf.predict(valid_X_hog)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM HOG ovo accuracy', 1 - err
-
-    clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_hog, train_y)
-    y_pred = clf.predict(valid_X_hog)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG ovr accuracy', 1 - err
-
-    clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_hog, train_y)
-    y_pred = clf.predict(valid_X_hog)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG ovo accuracy', 1 - err
-
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
-    clf.fit(train_X_hog, train_y)
-    y_pred = clf.predict(valid_X_hog)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG multinomial accuracy', 1 - err
+   #  clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+   #  clf.fit(train_X_gist, train_y)
+   #  y_pred = clf.predict(valid_X_gist)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg GIST multinomial accuracy', 1 - err
 
 
-    # Combine raw features, GIST and HOG descriptors together as our new feature vectors
-    train_X = np.concatenate((train_X_raw, train_X_gist, train_X_hog), axis=1)  # (3000, 4356)
-    valid_X = np.concatenate((valid_X_raw, valid_X_gist, valid_X_hog), axis=1)  # (1000, 4356)
+   # # Extract Features using HOG Descriptor
+   #  train_X_hog = np.zeros((3000, 324))
+   #  valid_X_hog = np.zeros((1000, 324))
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "training_data/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = cv2.imread(name, 0)
+   #          hog = ft.hog(img)
+   #          train_X_hog[i] = hog
+   #          i += 1
 
-    print "Combine raw features, GIST and HOG descriptors together (without PCA):"
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X, train_y)
-    y_pred = clf.predict(valid_X)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM HOG ovr accuracy', 1 - err
+   #  i = 0
+   #  for index in xrange(20000):
+   #      name = "held_out/" + str(index + 1) + ".png"
+   #      if os.path.isfile(name):
+   #          img = cv2.imread(name, 0)
+   #          hog = ft.hog(img)
+   #          valid_X_hog[i] = hog
+   #          i += 1
 
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X, train_y)
-    y_pred = clf.predict(valid_X)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM HOG ovo accuracy', 1 - err
+   #  print "HOG (without PCA):"
+   #  clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_hog, train_y)
+   #  y_pred = clf.predict(valid_X_hog)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM HOG ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X, train_y)
-    y_pred = clf.predict(valid_X)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG ovr accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_hog, train_y)
+   #  y_pred = clf.predict(valid_X_hog)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM HOG ovo accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X, train_y)
-    y_pred = clf.predict(valid_X)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG ovo accuracy', 1 - err
+   #  clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_hog, train_y)
+   #  y_pred = clf.predict(valid_X_hog)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG ovr accuracy', 1 - err
 
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
-    clf.fit(train_X, train_y)
-    y_pred = clf.predict(valid_X)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg HOG multinomial accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_hog, train_y)
+   #  y_pred = clf.predict(valid_X_hog)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG ovo accuracy', 1 - err
 
-
-    # Using PCA on raw features
-    l = 500
-    print "PCA with %d principal components on raw features:" % l
-    U_train, mu_train = util.PCA(train_X_raw)
-    U_valid, mu_valid = util.PCA(valid_X_raw)
-    Z_train, Ul_train = util.apply_PCA_from_Eig(train_X_raw, U_train, l, mu_train)
-    train_X_rec = util.reconstruct_from_PCA(Z_train, Ul_train, mu_train)
-    Z_valid, Ul_valid = util.apply_PCA_from_Eig(valid_X_raw, U_valid, l, mu_valid)
-    valid_X_rec = util.reconstruct_from_PCA(Z_valid, Ul_valid, mu_valid)
-
-    # create Multiclass
-    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
-    # and slack penalty C = 10
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM PCA ovr accuracy', 1 - err
-
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM PCA ovo accuracy', 1 - err
-
-    clf = Multiclass(R_ovr, C=10, clf='logistic')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg PCA ovr accuracy', 1 - err
-
-    clf = Multiclass(R_ovo, C=10, clf='logistic')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg PCA ovo accuracy', 1 - err
-
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l2', solver='lbfgs', multi_class='multinomial')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg multinomial accuracy', 1 - err
+   #  clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+   #  clf.fit(train_X_hog, train_y)
+   #  y_pred = clf.predict(valid_X_hog)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG multinomial accuracy', 1 - err
 
 
-    # Using PCA on combined features
-    print "PCA with %d principal components on combined features:" % l
-    U_train, mu_train = util.PCA(train_X)
-    U_valid, mu_valid = util.PCA(valid_X)
-    Z_train, Ul_train = util.apply_PCA_from_Eig(train_X, U_train, l, mu_train)
-    train_X_rec = util.reconstruct_from_PCA(Z_train, Ul_train, mu_train)
-    Z_valid, Ul_valid = util.apply_PCA_from_Eig(valid_X, U_valid, l, mu_valid)
-    valid_X_rec = util.reconstruct_from_PCA(Z_valid, Ul_valid, mu_valid)
+   #  # Combine raw features, GIST and HOG descriptors together as our new feature vectors
+   #  train_X = np.concatenate((train_X_raw, train_X_gist, train_X_hog), axis=1)  # (3000, 4356)
+   #  valid_X = np.concatenate((valid_X_raw, valid_X_gist, valid_X_hog), axis=1)  # (1000, 4356)
 
-    # create Multiclass
-    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
-    # and slack penalty C = 10
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM PCA ovr accuracy', 1 - err
+   #  print "Combine raw features, GIST and HOG descriptors together (without PCA):"
+   #  clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X, train_y)
+   #  y_pred = clf.predict(valid_X)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM HOG ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM PCA ovo accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X, train_y)
+   #  y_pred = clf.predict(valid_X)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM HOG ovo accuracy', 1 - err
 
-    clf = Multiclass(R_ovr, C=10, clf='logistic')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg PCA ovr accuracy', 1 - err
+   #  clf = Multiclass(R_ovr, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X, train_y)
+   #  y_pred = clf.predict(valid_X)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG ovr accuracy', 1 - err
 
-    clf = Multiclass(R_ovo, C=10, clf='logistic')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg PCA ovo accuracy', 1 - err
+   #  clf = Multiclass(R_ovo, C=10, clf='logistic', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X, train_y)
+   #  y_pred = clf.predict(valid_X)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG ovo accuracy', 1 - err
 
-    clf = LogisticRegression(fit_intercept=True, C=10, penalty='l2', solver='lbfgs', multi_class='multinomial')
-    clf.fit(train_X_rec, train_y)
-    y_pred = clf.predict(valid_X_rec)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg multinomial accuracy', 1 - err
+   #  clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
+   #  clf.fit(train_X, train_y)
+   #  y_pred = clf.predict(valid_X)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg HOG multinomial accuracy', 1 - err
+
+
+   #  # Using PCA on raw features
+   #  l = 500
+   #  print "PCA with %d principal components on raw features:" % l
+   #  U_train, mu_train = util.PCA(train_X_raw)
+   #  U_valid, mu_valid = util.PCA(valid_X_raw)
+   #  Z_train, Ul_train = util.apply_PCA_from_Eig(train_X_raw, U_train, l, mu_train)
+   #  train_X_rec = util.reconstruct_from_PCA(Z_train, Ul_train, mu_train)
+   #  Z_valid, Ul_valid = util.apply_PCA_from_Eig(valid_X_raw, U_valid, l, mu_valid)
+   #  valid_X_rec = util.reconstruct_from_PCA(Z_valid, Ul_valid, mu_valid)
+
+   #  # create Multiclass
+   #  # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
+   #  # and slack penalty C = 10
+   #  clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM PCA ovr accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM PCA ovo accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovr, C=10, clf='logistic')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg PCA ovr accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovo, C=10, clf='logistic')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg PCA ovo accuracy', 1 - err
+
+   #  clf = LogisticRegression(fit_intercept=True, C=10, penalty='l2', solver='lbfgs', multi_class='multinomial')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg multinomial accuracy', 1 - err
+
+
+   #  # Using PCA on combined features
+   #  print "PCA with %d principal components on combined features:" % l
+   #  U_train, mu_train = util.PCA(train_X)
+   #  U_valid, mu_valid = util.PCA(valid_X)
+   #  Z_train, Ul_train = util.apply_PCA_from_Eig(train_X, U_train, l, mu_train)
+   #  train_X_rec = util.reconstruct_from_PCA(Z_train, Ul_train, mu_train)
+   #  Z_valid, Ul_valid = util.apply_PCA_from_Eig(valid_X, U_valid, l, mu_valid)
+   #  valid_X_rec = util.reconstruct_from_PCA(Z_valid, Ul_valid, mu_valid)
+
+   #  # create Multiclass
+   #  # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
+   #  # and slack penalty C = 10
+   #  clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM PCA ovr accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     SVM PCA ovo accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovr, C=10, clf='logistic')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg PCA ovr accuracy', 1 - err
+
+   #  clf = Multiclass(R_ovo, C=10, clf='logistic')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg PCA ovo accuracy', 1 - err
+
+   #  clf = LogisticRegression(fit_intercept=True, C=10, penalty='l2', solver='lbfgs', multi_class='multinomial')
+   #  clf.fit(train_X_rec, train_y)
+   #  y_pred = clf.predict(valid_X_rec)
+   #  err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+   #  print '     Log Reg multinomial accuracy', 1 - err
 
 
 
