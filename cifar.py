@@ -339,7 +339,7 @@ def select_param_kNN(X, y, kf):
         temp_score = cv_performance(clf, X, y, kf)
         print "The accuracy for k =", k , "is", temp_score[0]
         print temp_score
-        if temp_score > best_score:
+        if temp_score[0] > best_score:
             best_k, best_score  = k, temp_score[0]
     return best_k
 
@@ -358,7 +358,7 @@ def select_param_randomForest(X, y, kf):
             temp_score = cv_performance(clf, X, y, kf)
             print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score[0]
             print temp_score
-            if temp_score > best_score:
+            if temp_score[0] > best_score:
                 best_numTree, best_depth, best_score  = numTree, depth, temp_score[0]
     return best_numTree, best_depth
 
@@ -380,7 +380,7 @@ def select_param_rbf(X, y, kf):
                 temp_score = cv_performance(clf, X, y, kf)
                 print "The accuracy for oc =", oc, ", C =", C ,"and gamma = ", Gamma, "is", temp_score[0]
                 print temp_score
-                if temp_score > best_score:
+                if temp_score[0] > best_score:
                     best_oc, best_C, best_Gamma, best_score  = oc, C, Gamma, temp_score[0]
     return best_oc, best_Gamma, best_C
 
@@ -408,7 +408,7 @@ def select_param_poly(X, y, kf):
                     temp_score = cv_performance(clf, X, y, kf)
                     print "The accuracy for degree =", degree , "gamma = ", gamma, "and c =", c, " and output code", key, "is", temp_score[0]
                     print temp_score
-                    if temp_score > best_score:
+                    if temp_score[0] > best_score:
                         best_code, best_C, best_degree, best_gamma, best_score  = key, c, degree, gamma, temp_score[0]
     return best_code, best_C, best_degree, best_gamma
 
@@ -427,7 +427,7 @@ def select_param_logReg(X, y, kf, codes):
             temp_score = cv_performance(clf, X, y, kf)
             print "The accuracy for C =", c , "and output code =", name, "is", temp_score[0]
             print temp_score
-            if temp_score > best_score:
+            if temp_score[0] > best_score:
                 best_c, best_code, best_score = c, code, temp_score[0]
     return best_c, best_code
 
@@ -508,53 +508,53 @@ def main() :
     kf = StratifiedKFold(train_y, n_folds=10)
 
 
-    print "Raw feature:"
+    # print "Raw feature:"
 
-    # select hyperparameters for SVM classifier with poly kernel
-    oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
-
-
-    # select hyperparameters for SVM classifier with RBF kernel
-    oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
-    # Best: ovo, c = 10, gamma = 0.00390625
+    # # select hyperparameters for SVM classifier with poly kernel
+    # oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
+    # clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
 
 
-    # select hyperparameters for random forest classifier
-    numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
-    clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
-    # Best: numTree = 500, max depth = 500
+    # # select hyperparameters for SVM classifier with RBF kernel
+    # oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
+    # clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    # # Best: ovo, c = 10, gamma = 0.00390625
 
 
-    # select hyperparameters for kNN classifier
-    k = select_param_kNN(train_X_raw, train_y, kf)
-    clf = KNeighborsClassifier(n_neighbors=k)
-    #clf.fit(train_X_raw, train_y)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
-    # Best: k = 5
+    # # select hyperparameters for random forest classifier
+    # numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    # # Best: numTree = 500, max depth = 500
 
 
-    # select hyperparameters for Log Reg
-    R_ovr = generate_output_codes(num_classes, 'ovr')
-    R_ovo = generate_output_codes(num_classes, 'ovo')
+    # # select hyperparameters for kNN classifier
+    # k = select_param_kNN(train_X_raw, train_y, kf)
+    # clf = KNeighborsClassifier(n_neighbors=k)
+    # #clf.fit(train_X_raw, train_y)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    # # Best: k = 5
 
-    codes = {}
-    codes["ovr"] = R_ovr
-    codes["ovo"] = R_ovo
+
+    # # select hyperparameters for Log Reg
+    # R_ovr = generate_output_codes(num_classes, 'ovr')
+    # R_ovo = generate_output_codes(num_classes, 'ovo')
+
+    # codes = {}
+    # codes["ovr"] = R_ovr
+    # codes["ovo"] = R_ovo
 
 
-    c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
-    clf = Multiclass(code, C=c, clf='logistic')
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
+    # c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
+    # clf = Multiclass(code, C=c, clf='logistic')
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
 
 
     # Extract Features using GIST Descriptor
