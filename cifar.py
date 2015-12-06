@@ -510,26 +510,12 @@ def main() :
 
     print "Raw feature:"
 
-    # select hyperparameters for SVM classifier with poly kernel
-    oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
-
-
-    # select hyperparameters for SVM classifier with RBF kernel
-    oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
-    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
-    # Best: ovo, c = 10, gamma = 0.00390625
-
 
     # select hyperparameters for random forest classifier
     numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
     clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    print '     Random forest with %d trees, each with max depth %d accuracy %f %f %f %f'  % (numTree, depth, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # Best: numTree = 500, max depth = 500
 
 
@@ -538,7 +524,7 @@ def main() :
     clf = KNeighborsClassifier(n_neighbors=k)
     #clf.fit(train_X_raw, train_y)
     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    print '     KNN with %d neighbors accuracy %f %f %f %f' % (k, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # Best: k = 5
 
 
@@ -554,7 +540,23 @@ def main() :
     c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f %f %f %f'  % (code, c, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
+
+
+    # select hyperparameters for SVM classifier with poly kernel
+    oc, C, deg, gamma = select_param_poly(train_X_raw, train_y, kf)
+    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f %f %f %f'  % (oc, C, deg, gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
+
+
+    # select hyperparameters for SVM classifier with RBF kernel
+    oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
+    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f %f %f %f'  % (oc, C, Gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
+    # Best: ovo, c = 10, gamma = 0.00390625
+
 
 
     # Extract Features using GIST Descriptor
@@ -576,7 +578,7 @@ def main() :
     clf = KNeighborsClassifier(n_neighbors=k)
     #clf.fit(train_X_raw, train_y)
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    print '     KNN with %d neighbors accuracy %f %f %f %f' % (k, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # k = 12
 
 
@@ -584,7 +586,7 @@ def main() :
     numTree, depth = select_param_randomForest(train_X_gist, train_y, kf)
     clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    print '     Random forest with %d trees, each with max depth %d accuracy %f %f %f %f'  % (numTree, depth, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # numTree = 500, max depth = 200
 
 
@@ -592,14 +594,14 @@ def main() :
     oc, C, deg, gamma = select_param_poly(train_X_gist, train_y, kf)
     clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
+    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f %f %f %f'  % (oc, C, deg, gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
 
     # select hyperparameters for SVM classifier with RBF kernel
     oc, Gamma, C = select_param_rbf(train_X_gist, train_y, kf)
     clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f %f %f %f'  % (oc, C, Gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # ovo, C = 10, Gamma = 0.25
 
 
@@ -614,7 +616,7 @@ def main() :
     c, code = select_param_logReg(train_X_gist, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f %f %f %f'  % (code, c, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
 
 
@@ -638,7 +640,7 @@ def main() :
     clf = KNeighborsClassifier(n_neighbors=k)
     #clf.fit(train_X_raw, train_y)
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    print '     KNN with %d neighbors accuracy %f %f %f %f' % (k, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # k = 12
 
 
@@ -646,7 +648,7 @@ def main() :
     numTree, depth = select_param_randomForest(train_X_hog, train_y, kf)
     clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    print '     Random forest with %d trees, each with max depth %d accuracy %f %f %f %f'  % (numTree, depth, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # numTree = 500, max depth = 200
 
 
@@ -654,14 +656,14 @@ def main() :
     oc, C, deg, gamma = select_param_poly(train_X_hog, train_y, kf)
     clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
+    print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f %f %f %f'  % (oc, C, deg, gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
 
     # select hyperparameters for SVM classifier with RBF kernel
     oc, Gamma, C = select_param_rbf(train_X_hog, train_y, kf)
     clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f %f %f %f'  % (oc, C, Gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
     # ovo, C = 10, Gamma = 0.25
 
 
@@ -676,7 +678,7 @@ def main() :
     c, code = select_param_logReg(train_X_hog, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f %f %f %f'  % (code, c, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
 
 
@@ -696,7 +698,7 @@ def main() :
         clf = KNeighborsClassifier(n_neighbors=k)
         #clf.fit(train_X_raw, train_y)
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+        print '     KNN with %d neighbors accuracy %f %f %f %f' % (k, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
         # k = 12
 
 
@@ -704,7 +706,7 @@ def main() :
         numTree, depth = select_param_randomForest(train_X_rec, train_y, kf)
         clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+        print '     Random forest with %d trees, each with max depth %d accuracy %f %f %f %f'  % (numTree, depth, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
         # numTree = 500, max depth = 200
 
 
@@ -712,14 +714,14 @@ def main() :
         oc, C, deg, gamma = select_param_poly(train_X_rec, train_y, kf)
         clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=gamma, coef0 = 1.0)
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f'  % (oc, C, deg, gamma, accuracy)
+        print '     SVM poly with %s output code, C = %f, degree = %f, gamma = %f accuracy %f %f %f %f'  % (oc, C, deg, gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
 
         # select hyperparameters for SVM classifier with RBF kernel
         oc, Gamma, C = select_param_rbf(train_X_rec, train_y, kf)
         clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+        print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f %f %f %f'  % (oc, C, Gamma, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
         # ovo, C = 10, Gamma = 0.25
 
 
@@ -734,7 +736,7 @@ def main() :
         c, code = select_param_logReg(train_X_rec, train_y, kf, codes)
         clf = Multiclass(code, C=c, clf='logistic')
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
+        print '     Log Reg with %s output code, C = %f accuracy %f %f %f %f'  % (code, c, accuracy[0], accuracy[1], accuracy[2], accuracy[3])
 
     exit(0)
 
