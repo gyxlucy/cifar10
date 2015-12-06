@@ -17,6 +17,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
 
 #scikit-image libraries
 import skimage.feature as ft
@@ -308,16 +311,21 @@ def cv_performance(clf, X, y, kf, metric="accuracy"):
     
     # compute average cross-validation performance
     index = 0
-    scores = np.zeros(10) 
+    result = []
+    scores = np.zeros((4, 10)) 
     for train_index, test_index in kf:
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        scores[index] = metrics.accuracy_score(y_test, y_pred)
+        scores[0][index] = metrics.accuracy_score(y_test, y_pred)
+        scores[1][index] = metrics.precision_score(y_test, y_pred, average='macro')
+        scores[2][index] = metrics.recall_score(y_test, y_pred, average='macro')
+        scores[3][index] = metrics.f1_score(y_test, y_pred, average='macro')
         index += 1
-        # print "Fold", index, ":", scores[index - 1]
-    return (sum(scores)) / 10
+    for x in xrange(4):
+        result += [sum(scores[x])/10]
+    return result
 
 
 def select_param_kNN(X, y, kf):
@@ -346,8 +354,9 @@ def select_param_randomForest(X, y, kf):
     for numTree in numTree_range:
         for depth in depth_range:
             clf = RandomForestClassifier(n_estimators=numTree, max_depth = depth, criterion='entropy')
-            temp_score = cv_performance(clf, X, y, kf)
-            print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score
+            temp_score = cv_performance(clf, X, y, kf)[0]
+            print temp_score
+            print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score[0]
             if temp_score > best_score:
                 best_numTree, best_depth, best_score  = numTree, depth, temp_score
     return best_numTree, best_depth
@@ -435,6 +444,25 @@ def display_feature(num_of_pictures=20):
             counter += 1
 
 
+def select_param_logReg(X, y, kf, codes):
+    
+    print 'Logistic Regression Hyperparameter Selection:'
+
+    c_values = [0.01, 0.1, 1, 10, 100]
+    best_score = float("-inf")
+    best_c = 0
+    best_code = None
+    for c in c_values:
+        for name, code in codes.iteritems():
+            clf = Multiclass(code, C=c, clf='logistic')
+            temp_score = cv_performance(clf, X, y, kf)
+            print temp_score
+            print "The accuracy for C =", c , "and output code =", name, "is", temp_score[0]
+            if temp_score > best_score:
+                best_c, best_code  = c, code
+    return best_c, best_code
+
+
 ######################################################################
 # main
 ######################################################################
@@ -458,7 +486,6 @@ def main() :
 
     # train_y = np.zeros(3000)
     # valid_y = np.zeros(1000)
-
 
     # Raw Features
     train_X_raw = np.zeros((3000, 3072))
@@ -552,67 +579,33 @@ def main() :
     # ovo, C = 10, Gamma = 0.25
 
 
-    exit(0)
+    # select hyperparameters for random forest classifier
+    # numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # # clf.fit(train_X_raw, train_y)
+    # # y_pred = clf.predict(valid_X_raw)
+    # # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print 
+    # print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
 
-    # select_param_svm_poly(train_X_raw, train_y, kf)
 
-    # Raw Feature
-
-    # train_X_raw = np.zeros((3000, 3072))
-    # valid_X_raw = np.zeros((1000, 3072))
-
-    # i = 0
-    # for index in xrange(20000):
-    #     name = "training_data/" + str(index + 1) + ".png"
-    #     if os.path.isfile(name):
-    #         img = mpimg.imread(name)
-    #         train_X_raw[i] = img.flatten()
-    #         train_y[i] = all_y[index]
-    #         i += 1
-
-    # i = 0
-    # for index in xrange(20000):
-    #     name = "held_out/" + str(index + 1) + ".png"
-    #     if os.path.isfile(name):
-    #         img = mpimg.imread(name)
-    #         valid_X_raw[i] = img.flatten()
-    #         valid_y[i] = all_y[index]
-    #         i += 1
-
-    print "Done with loading data..."
-
-    
+    # for k in xrange(10, 30):
+    #     clf = KNeighborsClassifier(n_neighbors=k)
+    #     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    #     print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
 
     R_ovr = generate_output_codes(num_classes, 'ovr')
     R_ovo = generate_output_codes(num_classes, 'ovo')
 
-    # create MulticlassSVM
-    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
-    # and slack penalty C = 10
-    print "Raw feature:"
-    clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM ovr accuracy', 1 - err
+    codes = {}
+    codes["ovr"] = R_ovr
+    codes["ovo"] = R_ovo
 
-    clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     SVM ovo accuracy', 1 - err
-
-    clf = Multiclass(R_ovr, C=10, clf='logistic' )
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg ovr accuracy', 1 - err
-
-    clf = Multiclass(R_ovo, C=10, clf='logistic')
-    clf.fit(train_X_raw, train_y)
-    y_pred = clf.predict(valid_X_raw)
-    err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    print '     Log Reg ovo accuracy', 1 - err
+    c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
+    clf = Multiclass(code, C=c, clf='logistic')
+    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    print '     Log Reg accuracy', accuracy
 
     clf = LogisticRegression(fit_intercept=True, C=10, penalty='l1', solver='lbfgs', multi_class='multinomial')
     clf.fit(train_X_raw, train_y)
@@ -620,6 +613,53 @@ def main() :
     err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
     print '     Log Reg multinomial accuracy', 1 - err
 
+
+    exit(0)
+
+
+    # Raw Feature
+
+    train_X_raw = np.zeros((3000, 3072))
+    valid_X_raw = np.zeros((1000, 3072))
+
+    i = 0
+    for index in xrange(20000):
+        name = "training_data/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = mpimg.imread(name)
+            train_X_raw[i] = img.flatten()
+            train_y[i] = all_y[index]
+            i += 1
+
+    i = 0
+    for index in xrange(20000):
+        name = "held_out/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = mpimg.imread(name)
+            valid_X_raw[i] = img.flatten()
+            valid_y[i] = all_y[index]
+            i += 1
+
+    print "Done with loading data..."
+
+    
+    # create MulticlassSVM
+    # use SVMs with polynomial kernel of degree 2 : K(u,v) = (1 + <u,v>)^2
+    # and slack penalty C = 10
+    # print "Raw feature:"
+    # clf = Multiclass(R_ovr, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     SVM ovr accuracy', 1 - err
+
+    # clf = Multiclass(R_ovo, C=10, clf='svm', kernel='poly', degree=2, gamma=1.0, coef0=1.0)
+    # clf.fit(train_X_raw, train_y)
+    # y_pred = clf.predict(valid_X_raw)
+    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
+    # print '     SVM ovo accuracy', 1 - err
+
+   
 
     # Extract Features using GIST Descriptor
     train_X_gist = np.zeros((3000, 960))
