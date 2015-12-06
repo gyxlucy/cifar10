@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegression
 
 #scikit-image libraries
 import skimage.feature as ft
+from skimage import exposure
 
 import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
@@ -35,6 +36,7 @@ import csv
 import os.path
 
 cifar_imageSize = (32,32)
+num_classes = 4
 
 
 ######################################################################
@@ -318,10 +320,24 @@ def cv_performance(clf, X, y, kf, metric="accuracy"):
     return (sum(scores)) / 10
 
 
+def select_param_kNN(X, y, kf):
+    
+    print 'kNN Hyperparameter Selection:'
+    k_range = np.arange(1, 40)
+    best_score = float("-inf")
+    best_k = 0
+    for k in k_range:
+        clf = KNeighborsClassifier(n_neighbors=k)
+        temp_score = cv_performance(clf, X, y, kf)
+        print "The accuracy for k =", k , "is", temp_score
+        if temp_score > best_score:
+            best_k, best_score  = k, temp_score
+    return best_k
+
+
 def select_param_randomForest(X, y, kf):
 
     print 'Random Forest Hyperparameter Selection:'
-    ### ========== TODO : START ========== ###
     numTree_range = [10, 20, 50, 100, 200, 500]
     depth_range = [10, 20, 50, 100, 200, 500, 1000, 2000]
     best_score = float("-inf")
@@ -337,23 +353,86 @@ def select_param_randomForest(X, y, kf):
     return best_numTree, best_depth
 
 
-def select_param_randomForest(X, y, kf):
+def select_param_rbf(X, y, kf):
     
-    print 'Random Forest Hyperparameter Selection:'
-    ### ========== TODO : START ========== ###
-    numTree_range = [10, 20, 50, 100, 200, 500]
-    depth_range = [10, 20, 50, 100, 200, 500, 1000, 2000]
+    print 'RBF SVM Hyperparameter Selection:'
+    output_codes = ['ovr', 'ovo']
+    C_range = 10.0 ** np.arange(-2, 5)
+    Gamma_range = 4.0 ** np.arange(-4, 1)
     best_score = float("-inf")
-    best_numTree = 0
-    best_depth = 0
-    for numTree in numTree_range:
-        for depth in depth_range:
-            clf = RandomForestClassifier(n_estimators=numTree, max_depth = depth, criterion='entropy')
-            temp_score = cv_performance(clf, X, y, kf)
-            print "The accuracy for numTree =", numTree , "and max depth =", depth, "is", temp_score
-            if temp_score > best_score:
-                best_numTree, best_depth, best_score  = numTree, depth, temp_score
-    return best_numTree, best_depths
+    best_C, best_Gamma = 0, 0
+    best_oc = None
+    for oc in output_codes:
+        R = generate_output_codes(num_classes, oc) 
+        for C in C_range:
+            for Gamma in Gamma_range:
+                clf = Multiclass(R, C=C, clf='svm', kernel='rbf', gamma=Gamma)
+                temp_score = cv_performance(clf, X, y, kf)
+                print "The accuracy for oc =", oc, ", C =", C ,"and gamma = ", Gamma, "is", temp_score
+                if temp_score > best_score:
+                    best_oc, best_C, best_Gamma, best_score  = oc, C, Gamma, temp_score
+    return best_oc, best_Gamma, best_C
+
+
+def select_param_poly(X, y, kf):
+
+    print 'poly SVM Hyperparameter Selection: '
+    num_classes = 4
+    R_ovr = generate_output_codes(num_classes, 'ovr')
+    R_ovo = generate_output_codes(num_classes, 'ovo')
+    output_codes = {'ovr':R_ovr, 'ovo': R_ovo}
+    C_range = 10.0 ** np.arange(-2, 5)
+    # best_gamma = 2.0 ** np.arange(-8, -1)
+    degree_range = range(1, 6, 1)
+    best_score = float("-inf")
+    best_C = 0
+    best_degree = 0
+    best_code = None
+    for key, code in output_codes.iteritems():
+        for degree in degree_range:
+            for c in C_range:
+                # for gamma in best_gamma:
+                clf = Multiclass(code, C=c, clf='svm', kernel='poly', degree=degree, gamma=0.1, coef0=1.0)
+                temp_score = cv_performance(clf, X, y, kf)
+                print "The accuracy for degree =", degree , "and c =", c, " and output code", key, "is", temp_score
+                if temp_score > best_score:
+                    best_code, best_C, best_degree, best_score  = key, c, degree, temp_score
+    return best_code, best_C, best_degree
+
+
+
+######################################################################
+# visualization
+######################################################################
+def display_feature(num_of_pictures=20):
+    counter = 0
+    for index in xrange(20000):
+        if counter >= num_of_pictures:
+            return 
+        name = "training_data/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = cv2.imread(name, 0)
+            hog, hog_image = ft.hog(img, visualise=True)
+            img_gist = Image.open(name)
+            gist = leargist.color_gist(img_gist)
+            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 4), sharex=True, sharey=True)
+            ax1.axis('off')
+            ax1.imshow(img, cmap=plt.cm.gray)
+            ax1.set_title('Input image')
+            ax1.set_adjustable('box-forced')
+
+            # hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 0.02))
+
+            ax2.axis('off')
+            ax2.imshow(hog_image, cmap=plt.cm.gray)
+            ax2.set_title('Histogram of Oriented Gradients')
+            ax2.set_adjustable('box-forced')
+            ax3.axis('off')
+            ax3.imshow(gist, cmap=plt.cm.gray)
+            ax3.set_title('GIST')
+            ax3.set_adjustable('box-forced')
+            plt.show()
+            counter += 1
 
 
 ######################################################################
@@ -363,6 +442,8 @@ def select_param_randomForest(X, y, kf):
 def main() :
 
     np.random.seed(1234)
+
+    display_feature()
 
     original_labels = open('trainLabels_modified.csv', 'rb')
     labelreader = csv.reader(original_labels)
@@ -378,37 +459,98 @@ def main() :
     # train_y = np.zeros(3000)
     # valid_y = np.zeros(1000)
 
-    train_X_raw = np.zeros((4000, 3072))
-    train_y = np.zeros(4000)
+
+    # Raw Features
+    train_X_raw = np.zeros((3000, 3072))
+    train_y = np.zeros(3000)
 
     i = 0
     for index in xrange(20000):
-        name = "data4000/" + str(index + 1) + ".png"
+        name = "training_data/" + str(index + 1) + ".png"
         if os.path.isfile(name):
             img = mpimg.imread(name)
             train_X_raw[i] = img.flatten()
             train_y[i] = all_y[index]
             i += 1
 
+
     # create stratified folds (10-fold CV)
     kf = StratifiedKFold(train_y, n_folds=10)
 
 
-    # select hyperparameters for random forest classifier
-    numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
-    clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
-    # clf.fit(train_X_raw, train_y)
-    # y_pred = clf.predict(valid_X_raw)
-    # err = metrics.zero_one_loss(valid_y, y_pred, normalize=True)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print 
-    print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    # print "Raw feature:"
 
-    k = 14
-    clf = KNeighborsClassifier(n_neighbors=k)
-    #clf.fit(train_X_raw, train_y)
-    accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    # # select hyperparameters for SVM classifier with RBF kernel
+    # oc, Gamma, C = select_param_rbf(train_X_raw, train_y, kf)
+    # clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    # # Best: ovo, c = 10, gamma = 0.00390625
+
+
+    # # select hyperparameters for random forest classifier
+    # numTree, depth = select_param_randomForest(train_X_raw, train_y, kf)
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    # # Best: numTree = 500, max depth = 500
+
+
+    # # select hyperparameters for kNN classifier
+    # k = select_param_kNN(train_X_raw, train_y, kf)
+    # clf = KNeighborsClassifier(n_neighbors=k)
+    # #clf.fit(train_X_raw, train_y)
+    # accuracy = cv_performance(clf, train_X_raw, train_y, kf)
+    # print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    # # Best: k = 5
+
+
+    # Extract Features using GIST Descriptor
+    train_X_gist = np.zeros((3000, 960))
+
+    i = 0
+    for index in xrange(20000):
+        name = "training_data/" + str(index + 1) + ".png"
+        if os.path.isfile(name):
+            img = Image.open(name)
+            gist = leargist.color_gist(img)
+            train_X_gist[i] = gist
+            i += 1
+
+    print "GIST (without PCA):"
+
+
+    # # select hyperparameters for kNN classifier
+    # k = select_param_kNN(train_X_gist, train_y, kf)
+    # clf = KNeighborsClassifier(n_neighbors=k)
+    # #clf.fit(train_X_raw, train_y)
+    # accuracy = cv_performance(clf, train_X_gist, train_y, kf)
+    # print '     KNN with %d neighbors accuracy %f' % (k, accuracy)
+    # # k = 12
+
+
+    # # select hyperparameters for random forest classifier
+    # numTree, depth = select_param_randomForest(train_X_gist, train_y, kf)
+    # clf = RandomForestClassifier(n_estimators=numTree, max_depth=depth, criterion='entropy')
+    # accuracy = cv_performance(clf, train_X_gist, train_y, kf)
+    # print '     Random forest with %d trees, each with max depth %d accuracy %f'  % (numTree, depth, accuracy)
+    # # numTree = 500, max depth = 200
+
+
+    # select hyperparameters for SVM classifier with poly kernel
+    oc, C, deg = select_param_poly(train_X_gist, train_y, kf)
+    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='poly', degree=deg, gamma=0.1, coef0 = 1.0)
+    accuracy = cv_performance(clf, train_X_gist, train_y, kf)
+    print '     SVM poly with %s output code, C = %f, degree = %f accuracy %f'  % (oc, C, deg, accuracy)
+
+
+    # select hyperparameters for SVM classifier with RBF kernel
+    oc, Gamma, C = select_param_rbf(train_X_gist, train_y, kf)
+    clf = Multiclass(generate_output_codes(num_classes, oc), C=C, clf='svm', kernel='rbf', gamma=Gamma)
+    accuracy = cv_performance(clf, train_X_gist, train_y, kf)
+    print '     SVM RBF with %s output code, C = %f, Gamma = %f accuracy %f'  % (oc, C, Gamma, accuracy)
+    # ovo, C = 10, Gamma = 0.25
+
 
     exit(0)
 
@@ -439,7 +581,7 @@ def main() :
 
     print "Done with loading data..."
 
-    num_classes = 4
+    
 
     R_ovr = generate_output_codes(num_classes, 'ovr')
     R_ovo = generate_output_codes(num_classes, 'ovo')
