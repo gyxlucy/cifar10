@@ -553,7 +553,7 @@ def main() :
     c, code = select_param_logReg(train_X_raw, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_raw, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
 
 
 
@@ -615,7 +615,7 @@ def main() :
     c, code = select_param_logReg(train_X_gist, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_gist, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
 
 
 
@@ -677,7 +677,7 @@ def main() :
     c, code = select_param_logReg(train_X_hog, train_y, kf, codes)
     clf = Multiclass(code, C=c, clf='logistic')
     accuracy = cv_performance(clf, train_X_hog, train_y, kf)
-    print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
+    print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
 
 
 
@@ -735,7 +735,7 @@ def main() :
         c, code = select_param_logReg(train_X_rec, train_y, kf, codes)
         clf = Multiclass(code, C=c, clf='logistic')
         accuracy = cv_performance(clf, train_X_rec, train_y, kf)
-        print '     Log Reg with %s output code, C = %f accuracy %f',  % (code, c, accuracy)
+        print '     Log Reg with %s output code, C = %f accuracy %f'  % (code, c, accuracy)
 
 
     exit(0)
